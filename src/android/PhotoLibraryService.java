@@ -81,7 +81,8 @@ public class PhotoLibraryService {
       put("title", MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME);
     }};
 
-    final ArrayList<JSONObject> queryResult = queryContentProvider(context, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, "1) GROUP BY 1,(2");
+    final ArrayList<JSONObject> queryResult = queryContentProvider(context, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, "");
+    // final ArrayList<JSONObject> queryResult = queryContentProvider(context, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, "1) GROUP BY 1,(2");
 
     return queryResult;
 
