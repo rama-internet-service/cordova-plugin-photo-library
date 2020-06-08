@@ -47,7 +47,8 @@ public class PhotoLibrary extends CordovaPlugin {
   }
 
   @Override
-  public boolean execute(String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
+  public boolean execute(String action, final JSONArray args, final CallbackContext callbackContext)
+      throws JSONException {
 
     this.callbackContext = callbackContext;
 
@@ -68,7 +69,8 @@ public class PhotoLibrary extends CordovaPlugin {
                 return;
               }
 
-              PhotoLibraryGetLibraryOptions getLibraryOptions = new PhotoLibraryGetLibraryOptions(itemsInChunk, chunkTimeSec, includeAlbumData);
+              PhotoLibraryGetLibraryOptions getLibraryOptions = new PhotoLibraryGetLibraryOptions(itemsInChunk,
+                  chunkTimeSec, includeAlbumData);
 
               service.getLibrary(getContext(), getLibraryOptions, new PhotoLibraryService.ChunkResultRunnable() {
                 @Override
@@ -133,7 +135,8 @@ public class PhotoLibrary extends CordovaPlugin {
                 return;
               }
 
-              PhotoLibraryService.PictureData thumbnail = service.getThumbnail(getContext(), photoId, thumbnailWidth, thumbnailHeight, quality);
+              PhotoLibraryService.PictureData thumbnail = service.getThumbnail(getContext(), photoId, thumbnailWidth,
+                  thumbnailHeight, quality);
               callbackContext.sendPluginResult(createMultipartPluginResult(PluginResult.Status.OK, thumbnail));
 
             } catch (Exception e) {
@@ -182,7 +185,7 @@ public class PhotoLibrary extends CordovaPlugin {
           final boolean write = options.getBoolean("write");
 
           if (read && !cordova.hasPermission(READ_EXTERNAL_STORAGE)
-            || write && !cordova.hasPermission(WRITE_EXTERNAL_STORAGE)) {
+              || write && !cordova.hasPermission(WRITE_EXTERNAL_STORAGE)) {
             requestAuthorization(read, write);
           } else {
             callbackContext.success();
@@ -310,7 +313,8 @@ public class PhotoLibrary extends CordovaPlugin {
         throw new FileNotFoundException("Incorrect 'quality' query parameter");
       }
 
-      PhotoLibraryService.PictureData thumbnailData = service.getThumbnail(getContext(), photoId, width, height, quality);
+      PhotoLibraryService.PictureData thumbnailData = service.getThumbnail(getContext(), photoId, width, height,
+          quality);
 
       if (thumbnailData == null) {
         throw new FileNotFoundException("Could not create thumbnail");
@@ -332,7 +336,8 @@ public class PhotoLibrary extends CordovaPlugin {
   }
 
   @Override
-  public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException {
+  public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults)
+      throws JSONException {
     super.onRequestPermissionResult(requestCode, permissions, grantResults);
 
     for (int r : grantResults) {
@@ -357,10 +362,13 @@ public class PhotoLibrary extends CordovaPlugin {
 
   }
 
-  private PluginResult createMultipartPluginResult(PluginResult.Status status, PhotoLibraryService.PictureData pictureData) throws JSONException {
+  private PluginResult createMultipartPluginResult(PluginResult.Status status,
+      PhotoLibraryService.PictureData pictureData) throws JSONException {
 
-    // As cordova-android 6.x uses EVAL_BRIDGE, and it breaks support for multipart result, we will encode result by ourselves.
-    // see encodeAsJsMessage method of https://github.com/apache/cordova-android/blob/master/framework/src/org/apache/cordova/NativeToJsMessageQueue.java
+    // As cordova-android 6.x uses EVAL_BRIDGE, and it breaks support for multipart
+    // result, we will encode result by ourselves.
+    // see encodeAsJsMessage method of
+    // https://github.com/apache/cordova-android/blob/master/framework/src/org/apache/cordova/NativeToJsMessageQueue.java
 
     JSONObject resultJSON = new JSONObject();
     resultJSON.put("data", Base64.encodeToString(pictureData.bytes, Base64.NO_WRAP));
@@ -368,11 +376,11 @@ public class PhotoLibrary extends CordovaPlugin {
 
     return new PluginResult(status, resultJSON);
 
-// This is old good code that worked with cordova-android 5.x
-//    return new PluginResult(status,
-//      Arrays.asList(
-//        new PluginResult(status, pictureData.getBytes()),
-//        new PluginResult(status, pictureData.getMimeType())));
+    // This is old good code that worked with cordova-android 5.x
+    // return new PluginResult(status,
+    // Arrays.asList(
+    // new PluginResult(status, pictureData.getBytes()),
+    // new PluginResult(status, pictureData.getMimeType())));
 
   }
 
@@ -395,7 +403,8 @@ public class PhotoLibrary extends CordovaPlugin {
     return new JSONArray(albums);
   }
 
-  private static JSONObject createGetLibraryResult(ArrayList<JSONObject> library, int chunkNum, boolean isLastChunk) throws JSONException {
+  private static JSONObject createGetLibraryResult(ArrayList<JSONObject> library, int chunkNum, boolean isLastChunk)
+      throws JSONException {
     JSONObject result = new JSONObject();
     result.put("chunkNum", chunkNum);
     result.put("isLastChunk", isLastChunk);
@@ -403,4 +412,46 @@ public class PhotoLibrary extends CordovaPlugin {
     return result;
   }
 
+  private leggeThumbnail(Uri uri){
+    Uri origUri = fromPluginUri(uri);
+
+    String photoId = origUri.getQueryParameter("photoId");
+    if (photoId == null || photoId.isEmpty()) {
+      throw new FileNotFoundException("Missing 'photoId' query parameter");
+    }
+    
+    String widthStr = origUri.getQueryParameter("width");
+      int width;
+      try {
+        width = widthStr == null || widthStr.isEmpty() ? DEFAULT_WIDTH : Integer.parseInt(widthStr);
+      } catch (NumberFormatException e) {
+        throw new FileNotFoundException("Incorrect 'width' query parameter");
+      }
+
+      String heightStr = origUri.getQueryParameter("height");
+      int height;
+      try {
+        height = heightStr == null || heightStr.isEmpty() ? DEFAULT_HEIGHT : Integer.parseInt(heightStr);
+      } catch (NumberFormatException e) {
+        throw new FileNotFoundException("Incorrect 'height' query parameter");
+      }
+
+      String qualityStr = origUri.getQueryParameter("quality");
+      double quality;
+      try {
+        quality = qualityStr == null || qualityStr.isEmpty() ? DEFAULT_QUALITY : Double.parseDouble(qualityStr);
+      } catch (NumberFormatException e) {
+        throw new FileNotFoundException("Incorrect 'quality' query parameter");
+      }
+
+      PhotoLibraryService.PictureData thumbnailData = service.getThumbnail(getContext(), photoId, width, height, quality);
+
+      if (thumbnailData == null) {
+        throw new FileNotFoundException("Could not create thumbnail");
+      }
+
+      InputStream is = new ByteArrayInputStream(thumbnailData.bytes);
+
+      return new CordovaResourceApi.OpenForReadResult(uri, is, thumbnailData.mimeType, is.available(), null);
+  }
 }
